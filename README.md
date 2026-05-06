@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/amex-logo.svg" width="180" alt="American Express Logo">
+  <img src="American_Express_logo_(2018).svg" width="180" alt="American Express Logo">
 </p>
 
 # 🏦 American Express — Data Intelligence Platform
