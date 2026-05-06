@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="American_Express_logo_(2018).svg" width="180" alt="American Express Logo">
+  <img src="American_Express_logo_(2018).svg.png" width="180" alt="American Express Logo">
 </p>
 
 # 🏦 American Express — Data Intelligence Platform
@@ -388,4 +388,3 @@ describe_financials(df)
 <div align="center">
 <sub>© 2025 Aranya2801 · MIT License · American Express® is a registered trademark of American Express Company. This project is an independent analytical work and is not affiliated with or endorsed by American Express Company.</sub>
 </div>
-
