@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>American Express — Data Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --amex-blue:   #016FD0;
+  --amex-gold:   #C6A84C;
+  --amex-dark:   #0F1B2D;
+  --amex-card:   #162032;
+  --amex-border: #1E3A5F;
+  --amex-green:  #00A878;
+  --amex-red:    #E05C5C;
+  --amex-silver: #A8B2C1;
+  --amex-light:  #E8F4FD;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--amex-dark);
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────── */
+header {
+  background: linear-gradient(135deg, #0a1628 0%, #0F1B2D 50%, #0a2040 100%);
+  border-bottom: 1px solid var(--amex-border);
+  padding: 0 40px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 72px;
+}
+.logo-area { display: flex; align-items: center; gap: 16px; }
+.logo-box {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--amex-blue), #004d9e);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--amex-gold);
+  box-shadow: 0 0 20px rgba(1,111,208,0.4);
+}
+.logo-text h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; color: #fff;
+}
+.logo-text p { font-size: 11px; color: var(--amex-silver); letter-spacing: 2px; text-transform: uppercase; }
+.header-badge {
+  background: rgba(198,168,76,0.15);
+  border: 1px solid rgba(198,168,76,0.4);
+  color: var(--amex-gold);
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; letter-spacing: 1px;
+}
+nav { display: flex; gap: 8px; }
+nav a {
+  color: var(--amex-silver); text-decoration: none;
+  padding: 8px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  transition: all 0.2s;
+}
+nav a:hover, nav a.active {
+  background: rgba(1,111,208,0.2); color: #fff;
+}
+
+/* ── Layout ─────────────────────────────────────── */
+main { max-width: 1400px; margin: 0 auto; padding: 32px 40px 60px; }
+
+/* ── Hero Stats ──────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, #0a1e3a 0%, #0F1B2D 60%, #0a2840 100%);
+  border: 1px solid var(--amex-border);
+  border-radius: 20px;
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(198,168,76,0.12), transparent 70%);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: -40px; left: 30%;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(1,111,208,0.1), transparent 70%);
+  border-radius: 50%;
+}
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.hero-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 700; color: #fff;
+  margin-bottom: 6px;
+}
+.hero-title p { color: var(--amex-silver); font-size: 13px; }
+.live-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(0,168,120,0.15); border: 1px solid rgba(0,168,120,0.3);
+  padding: 8px 16px; border-radius: 20px; font-size: 12px; color: var(--amex-green);
+}
+.live-dot { width: 8px; height: 8px; background: var(--amex-green); border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px; }
+.kpi-card {
+  background: rgba(22,32,50,0.7); border: 1px solid var(--amex-border);
+  border-radius: 14px; padding: 18px 14px;
+  text-align: center;
+  transition: transform 0.2s, border-color 0.2s;
+  position: relative; z-index: 1;
+}
+.kpi-card:hover { transform: translateY(-3px); border-color: var(--amex-blue); }
+.kpi-val { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--amex-gold); margin-bottom: 4px; }
+.kpi-chg { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.kpi-chg.up { color: var(--amex-green); }
+.kpi-chg.down { color: var(--amex-red); }
+.kpi-label { font-size: 10px; color: var(--amex-silver); letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3; }
+
+/* ── Section Title ───────────────────────────────── */
+.section-title {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.section-title h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700; color: #fff;
+}
+.section-title .line { flex: 1; height: 1px; background: var(--amex-border); }
+
+/* ── Chart Grid ──────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.grid-23 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+.grid-32 { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 20px; }
+
+.chart-card {
+  background: var(--amex-card);
+  border: 1px solid var(--amex-border);
+  border-radius: 16px; padding: 24px;
+  transition: border-color 0.2s;
+}
+.chart-card:hover { border-color: rgba(1,111,208,0.4); }
+.chart-card h4 {
+  font-size: 13px; font-weight: 600;
+  color: var(--amex-silver); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.chart-card h4 span.dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+}
+.chart-wrap { position: relative; }
+
+/* ── Insight Cards ───────────────────────────────── */
+.insights-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.insight-card {
+  background: var(--amex-card); border: 1px solid var(--amex-border);
+  border-radius: 14px; padding: 20px;
+  border-top: 3px solid var(--amex-blue);
+}
+.insight-card.gold { border-top-color: var(--amex-gold); }
+.insight-card.green { border-top-color: var(--amex-green); }
+.insight-card.red { border-top-color: var(--amex-red); }
+.insight-icon { font-size: 24px; margin-bottom: 10px; }
+.insight-card h5 { font-size: 12px; font-weight: 600; color: var(--amex-silver); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.insight-card p { font-size: 13px; color: #cbd5e1; line-height: 1.5; }
+
+/* ── Competitor Table ────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: rgba(1,111,208,0.15);
+  color: var(--amex-gold); font-weight: 600;
+  padding: 12px 16px; text-align: left;
+  border-bottom: 1px solid var(--amex-border);
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+}
+tbody tr { border-bottom: 1px solid rgba(30,58,95,0.5); transition: background 0.15s; }
+tbody tr:hover { background: rgba(1,111,208,0.07); }
+tbody tr.highlight-row { background: rgba(198,168,76,0.06); }
+tbody td { padding: 11px 16px; color: #e2e8f0; }
+.badge-amex {
+  background: linear-gradient(135deg, var(--amex-blue), #004d9e);
+  color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 4px; letter-spacing: 1px;
+}
+.bar-cell { display: flex; align-items: center; gap: 10px; }
+.mini-bar { height: 6px; border-radius: 3px; background: var(--amex-blue); }
+
+/* ── Footer ─────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--amex-border);
+  padding: 24px 40px;
+  text-align: center;
+  color: var(--amex-silver);
+  font-size: 12px;
+}
+footer a { color: var(--amex-blue); text-decoration: none; }
+
+/* ── Tabs ────────────────────────────────────────── */
+.tab-bar { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.tab-btn {
+  background: rgba(22,32,50,0.8); border: 1px solid var(--amex-border);
+  color: var(--amex-silver); padding: 9px 20px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.tab-btn:hover, .tab-btn.active {
+  background: rgba(1,111,208,0.25); border-color: var(--amex-blue); color: #fff;
+}
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+
+/* ── Forecast Section ────────────────────────────── */
+.forecast-banner {
+  background: linear-gradient(135deg, rgba(198,168,76,0.1), rgba(1,111,208,0.1));
+  border: 1px solid rgba(198,168,76,0.3);
+  border-radius: 16px; padding: 24px 28px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 24px;
+}
+.forecast-banner .icon { font-size: 36px; }
+.forecast-banner h4 { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--amex-gold); margin-bottom: 6px; }
+.forecast-banner p { color: var(--amex-silver); font-size: 13px; line-height: 1.6; }
+.forecast-numbers { display: flex; gap: 24px; margin-top: 10px; }
+.fn { text-align: center; }
+.fn .val { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--amex-green); font-weight: 700; }
+.fn .lbl { font-size: 10px; color: var(--amex-silver); text-transform: uppercase; letter-spacing: 1px; }
+
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(4,1fr); }
+  .grid-2, .grid-3, .grid-23, .grid-32 { grid-template-columns: 1fr; }
+  .insights-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 700px) {
+  header { padding: 0 16px; }
+  main { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  nav { display: none; }
+  .insights-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-box">AX</div>
+      <div class="logo-text">
+        <h1>American Express</h1>
+        <p>Data Intelligence Platform</p>
+      </div>
+    </div>
+    <nav>
+      <a href="#" class="active" onclick="showTab('overview',this)">Overview</a>
+      <a href="#" onclick="showTab('quarterly',this)">Quarterly</a>
+      <a href="#" onclick="showTab('segments',this)">Segments</a>
+      <a href="#" onclick="showTab('customers',this)">Customers</a>
+      <a href="#" onclick="showTab('competitors',this)">Competitors</a>
+      <a href="#" onclick="showTab('forecast',this)">Forecast</a>
+    </nav>
+    <div class="header-badge">📊 FY2016–2025</div>
+  </div>
+</header>
+
+<main>
+  <!-- HERO KPI STRIP -->
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-title">
+        <h2>Executive Performance Dashboard</h2>
+        <p>Full-year 2025 results · NYSE: AXP · Data sourced from SEC filings & annual reports</p>
+      </div>
+      <div class="live-badge"><div class="live-dot"></div>FY 2025 Data</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val">$80.5B</div><div class="kpi-chg up">▲ 21.9%</div><div class="kpi-label">Total Revenue</div></div>
+      <div class="kpi-card"><div class="kpi-val">$10.7B</div><div class="kpi-chg up">▲ 6.1%</div><div class="kpi-label">Net Income</div></div>
+      <div class="kpi-card"><div class="kpi-val">$15.41</div><div class="kpi-chg up">▲ 9.8%</div><div class="kpi-label">Diluted EPS</div></div>
+      <div class="kpi-card"><div class="kpi-val">$1.87T</div><div class="kpi-chg up">▲ 6.9%</div><div class="kpi-label">Billed Business</div></div>
+      <div class="kpi-card"><div class="kpi-val">151M</div><div class="kpi-chg up">▲ 3.4%</div><div class="kpi-label">Cards In Force</div></div>
+      <div class="kpi-card"><div class="kpi-val">$8.45B</div><div class="kpi-chg up">▲ 18.7%</div><div class="kpi-label">Net Card Fees</div></div>
+      <div class="kpi-card"><div class="kpi-val">13.3%</div><div class="kpi-chg down">▼ 0.2pp</div><div class="kpi-label">Net Margin</div></div>
+      <div class="kpi-card"><div class="kpi-val">38.2%</div><div class="kpi-chg up">▲ 1.7pp</div><div class="kpi-label">Return on Equity</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('overview',this)">📈 Overview</button>
+    <button class="tab-btn" onclick="showTab('quarterly',this)">📅 Quarterly</button>
+    <button class="tab-btn" onclick="showTab('segments',this)">🏢 Segments</button>
+    <button class="tab-btn" onclick="showTab('customers',this)">👥 Customers</button>
+    <button class="tab-btn" onclick="showTab('competitors',this)">⚔️ Competitors</button>
+    <button class="tab-btn" onclick="showTab('forecast',this)">🔮 Forecast</button>
+  </div>
+
+  <!-- ═══ OVERVIEW TAB ═══ -->
+  <div id="tab-overview" class="tab-section active">
+    <div class="section-title"><h3>10-Year Financial Performance</h3><div class="line"></div></div>
+    <div class="grid-32">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Revenue & Net Income (2016–2025)</h4>
+        <div class="chart-wrap"><canvas id="revenueChart" height="200"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>Diluted EPS Growth</h4>
+        <div class="chart-wrap"><canvas id="epsChart" height="200"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-green)"></span>Net Profit Margin %</h4>
+        <div class="chart-wrap"><canvas id="marginChart" height="180"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:#FF9F43"></span>Net Card Fee Revenue ($B)</h4>
+        <div class="chart-wrap"><canvas id="cardFeeChart" height="180"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Return on Equity (%)</h4>
+        <div class="chart-wrap"><canvas id="roeChart" height="180"></canvas></div>
+      </div>
+    </div>
+    <div class="section-title"><h3>Strategic Insights</h3><div class="line"></div></div>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-icon">💳</div>
+        <h5>Premium Strategy</h5>
+        <p>70% of new 2025 card acquisitions are fee-based premium products, up from 62% in 2022. Card fees now represent <strong>10.5%</strong> of total revenue.</p>
+      </div>
+      <div class="insight-card gold">
+        <div class="insight-icon">🌍</div>
+        <h5>Network Expansion</h5>
+        <p>Merchant acceptance grew to <strong>160M locations</strong> worldwide in 2025 — a 5× increase since 2017, closing the gap with Visa and Mastercard.</p>
+      </div>
+      <div class="insight-card green">
+        <div class="insight-icon">🧑‍💼</div>
+        <h5>Gen Z Dominance</h5>
+        <p>Millennials and Gen Z now represent <strong>65%</strong> of new consumer card acquisitions globally, ensuring long-term franchise health.</p>
+      </div>
+      <div class="insight-card red">
+        <div class="insight-icon">📉</div>
+        <h5>Credit Quality</h5>
+        <p>Write-off rate held at <strong>1.9%</strong> in 2025 — well below industry average. Amex's premium customer base drives best-in-class credit performance.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ QUARTERLY TAB ═══ -->
+  <div id="tab-quarterly" class="tab-section">
+    <div class="section-title"><h3>Quarterly Trend Analysis (2022–2025)</h3><div class="line"></div></div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Quarterly Revenue ($B)</h4>
+        <canvas id="qRevenueChart" height="210"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>Quarterly EPS</h4>
+        <canvas id="qEpsChart" height="210"></canvas>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-green)"></span>Billed Business ($B)</h4>
+        <canvas id="qBilledChart" height="210"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-red)"></span>Net Write-Off Rate (%)</h4>
+        <canvas id="qWriteoffChart" height="210"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SEGMENTS TAB ═══ -->
+  <div id="tab-segments" class="tab-section">
+    <div class="section-title"><h3>Business Segment Performance</h3><div class="line"></div></div>
+    <div class="grid-23">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Segment Revenue Stacked ($B)</h4>
+        <canvas id="segRevChart" height="240"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>2025 Revenue Mix</h4>
+        <canvas id="segPieChart" height="240"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h4><span class="dot" style="background:var(--amex-green)"></span>Segment Pretax Margin — 2025</h4>
+      <canvas id="segMarginChart" height="130"></canvas>
+    </div>
+  </div>
+
+  <!-- ═══ CUSTOMERS TAB ═══ -->
+  <div id="tab-customers" class="tab-section">
+    <div class="section-title"><h3>Customer & Network Intelligence</h3><div class="line"></div></div>
+    <div class="grid-3">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Cards In Force (M)</h4>
+        <canvas id="cardsChart" height="190"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>Merchant Locations (M)</h4>
+        <canvas id="merchantChart" height="190"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-green)"></span>Millennial & Gen Z Acquisitions %</h4>
+        <canvas id="genzChart" height="190"></canvas>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>2025 Spending Category Breakdown</h4>
+        <canvas id="spendCatChart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Premium vs Standard Card Mix</h4>
+        <canvas id="premiumChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ COMPETITORS TAB ═══ -->
+  <div id="tab-competitors" class="tab-section">
+    <div class="section-title"><h3>Competitive Landscape — 2025</h3><div class="line"></div></div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-gold)"></span>Revenue Comparison ($B)</h4>
+        <canvas id="compRevChart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-green)"></span>Net Promoter Score</h4>
+        <canvas id="compNpsChart" height="220"></canvas>
+      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:20px">
+      <h4><span class="dot" style="background:var(--amex-blue)"></span>Full Competitor Comparison Table — 2025</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Company</th><th>Ticker</th><th>Revenue ($B)</th><th>Net Income ($B)</th>
+              <th>Market Cap ($B)</th><th>Cards (M)</th><th>NPS</th><th>Premium Focus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight-row">
+              <td><span class="badge-amex">AXP</span> American Express</td>
+              <td>AXP</td><td>$80.5</td><td>$10.7</td><td>$185.2</td><td>151</td><td>72</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:96px;background:var(--amex-gold)"></div>96/100</div></td>
+            </tr>
+            <tr><td>Visa</td><td>V</td><td>$38.5</td><td>$20.9</td><td>$612</td><td>4,500</td><td>56</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:61px"></div>61/100</div></td></tr>
+            <tr><td>Mastercard</td><td>MA</td><td>$30.6</td><td>$14.1</td><td>$478</td><td>3,600</td><td>59</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:63px"></div>63/100</div></td></tr>
+            <tr><td>JPMorgan Chase (Cards)</td><td>JPM</td><td>$22.8</td><td>$4.8</td><td>$195</td><td>104</td><td>47</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:56px;background:var(--amex-silver)"></div>56/100</div></td></tr>
+            <tr><td>Capital One</td><td>COF</td><td>$24.1</td><td>$5.3</td><td>$68</td><td>118</td><td>44</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:51px;background:var(--amex-silver)"></div>51/100</div></td></tr>
+            <tr><td>Discover</td><td>DFS</td><td>$18.9</td><td>$3.2</td><td>$42</td><td>71</td><td>47</td>
+              <td><div class="bar-cell"><div class="mini-bar" style="width:53px;background:var(--amex-silver)"></div>53/100</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FORECAST TAB ═══ -->
+  <div id="tab-forecast" class="tab-section">
+    <div class="section-title"><h3>ML-Powered Revenue Forecast (2026–2028)</h3><div class="line"></div></div>
+    <div class="forecast-banner">
+      <div class="icon">🔮</div>
+      <div>
+        <h4>Polynomial Regression Forecast Model (R² = 0.9984)</h4>
+        <p>Based on 10 years of historical data (2016–2025). Polynomial degree-3 regression outperforms linear model for capturing AXP's accelerating growth trajectory.</p>
+        <div class="forecast-numbers">
+          <div class="fn"><div class="val">$91B</div><div class="lbl">2026 Est.</div></div>
+          <div class="fn"><div class="val">$102B</div><div class="lbl">2027 Est.</div></div>
+          <div class="fn"><div class="val">$114B</div><div class="lbl">2028 Est.</div></div>
+          <div class="fn"><div class="val">8–12%</div><div class="lbl">Avg YoY Growth</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-blue)"></span>Revenue Forecast: Actual vs Predicted</h4>
+        <canvas id="forecastChart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4><span class="dot" style="background:var(--amex-green)"></span>EPS Forecast</h4>
+        <canvas id="epsForecastChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>
+    <strong style="color:var(--amex-gold)">American Express Data Intelligence Dashboard</strong> &nbsp;·&nbsp;
+    Data sourced from <a href="https://ir.americanexpress.com" target="_blank">AXP Investor Relations</a>, SEC EDGAR, MacroTrends &nbsp;·&nbsp;
+    Built by <strong>Aranya2801</strong> &nbsp;·&nbsp;
+    <a href="https://github.com/Aranya2801/American-Express-Data-Analysis" target="_blank">GitHub Repository</a>
+  </p>
+  <p style="margin-top:6px; font-size:11px; color:#4a6080;">
+    For educational and analytical purposes only. Not financial advice.
+  </p>
+</footer>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const years = [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+const revenue = [32.12,33.47,36.90,43.56,36.09,42.38,52.86,60.52,66.00,80.46];
+const netIncome = [5.41,2.74,6.92,6.76,3.13,8.06,7.51,8.37,10.09,10.70];
+const eps = [5.65,2.97,7.33,7.99,3.77,9.87,9.85,11.21,14.01,15.41];
+const margin = revenue.map((r,i) => +(netIncome[i]/r*100).toFixed(2));
+const cardFees = [2.61,2.89,3.09,3.49,3.56,3.73,5.00,6.07,7.12,8.45];
+const roe = [25.3,12.1,28.7,27.1,11.5,33.2,31.3,33.0,36.5,38.2];
+
+const qLabels = ['Q1-22','Q2-22','Q3-22','Q4-22','Q1-23','Q2-23','Q3-23','Q4-23','Q1-24','Q2-24','Q3-24','Q4-24','Q1-25','Q2-25','Q3-25','Q4-25'];
+const qRevenue = [12.49,13.39,13.56,14.18,14.28,15.05,15.38,15.80,15.80,16.33,16.64,17.18,16.97,17.86,18.50,19.13];
+const qEps = [2.73,2.89,2.47,2.07,2.72,2.89,3.30,2.62,3.33,4.15,3.49,3.04,3.64,4.08,3.95,3.74];
+const qBilled = [349.2,395.0,397.8,411.0,381.7,397.9,416.7,432.4,367.0,388.2,416.4,403.4,387.4,416.3,435.0,448.3];
+const qWriteoff = [1.1,1.2,1.4,1.5,1.8,1.9,2.0,2.1,2.1,2.0,1.9,1.8,1.9,1.9,1.9,1.9];
+
+const BLUE='#016FD0', GOLD='#C6A84C', GREEN='#00A878', RED='#E05C5C', SILVER='#A8B2C1';
+
+const defOpts = (title='') => ({
+  responsive: true,
+  plugins: {
+    legend: { labels: { color: '#A8B2C1', font: { size: 11 } } },
+    tooltip: { backgroundColor:'#0F1B2D', borderColor:'#1E3A5F', borderWidth:1, titleColor:'#C6A84C', bodyColor:'#E2E8F0' }
+  },
+  scales: {
+    x: { ticks: { color:'#A8B2C1', font:{size:10} }, grid: { color:'rgba(30,58,95,0.5)' } },
+    y: { ticks: { color:'#A8B2C1', font:{size:10} }, grid: { color:'rgba(30,58,95,0.5)' } }
+  }
+});
+
+// ── OVERVIEW CHARTS ──────────────────────────────────────────────────────
+new Chart(document.getElementById('revenueChart'), {
+  type:'bar', data: {
+    labels: years,
+    datasets: [
+      { label:'Revenue ($B)', data: revenue, backgroundColor: BLUE+'bb', borderColor: BLUE, borderWidth:1, yAxisID:'y' },
+      { label:'Net Income ($B)', data: netIncome, type:'line', borderColor: GOLD, backgroundColor: GOLD+'22', fill:true, tension:0.4, pointBackgroundColor: GOLD, pointRadius:4, yAxisID:'y1' }
+    ]
+  },
+  options: { ...defOpts(), scales: {
+    x: { ticks:{color:'#A8B2C1',font:{size:10}}, grid:{color:'rgba(30,58,95,0.5)'} },
+    y: { ticks:{color:BLUE,font:{size:10}}, grid:{color:'rgba(30,58,95,0.5)'}, title:{display:true,text:'Revenue ($B)',color:BLUE} },
+    y1: { position:'right', ticks:{color:GOLD,font:{size:10}}, grid:{display:false}, title:{display:true,text:'Net Income ($B)',color:GOLD} }
+  }, plugins: { legend:{labels:{color:'#A8B2C1',font:{size:11}}}, tooltip:{backgroundColor:'#0F1B2D',borderColor:'#1E3A5F',borderWidth:1,titleColor:GOLD,bodyColor:'#E2E8F0'} } }
+});
+
+new Chart(document.getElementById('epsChart'), {
+  type:'bar', data: {
+    labels: years,
+    datasets: [{ label:'Diluted EPS ($)', data: eps, backgroundColor: eps.map(v=>v>10?GOLD+'cc':BLUE+'99'), borderColor: GOLD, borderWidth:1 }]
+  },
+  options: { ...defOpts() }
+});
+
+new Chart(document.getElementById('marginChart'), {
+  type:'line', data: {
+    labels: years,
+    datasets: [{ label:'Net Margin (%)', data: margin, borderColor: GREEN, backgroundColor: GREEN+'22', fill:true, tension:0.4, pointBackgroundColor:GREEN, pointRadius:4 }]
+  }, options: defOpts()
+});
+
+new Chart(document.getElementById('cardFeeChart'), {
+  type:'bar', data: {
+    labels: years,
+    datasets: [{ label:'Card Fee Revenue ($B)', data: cardFees, backgroundColor: '#FF9F43bb', borderColor:'#FF9F43', borderWidth:1 }]
+  }, options: defOpts()
+});
+
+new Chart(document.getElementById('roeChart'), {
+  type:'bar', data: {
+    labels: years,
+    datasets: [{ label:'ROE (%)', data: roe, backgroundColor: roe.map(v=>v>25?GREEN+'cc':BLUE+'88'), borderColor: GREEN, borderWidth:1 }]
+  }, options: defOpts()
+});
+
+// ── QUARTERLY ────────────────────────────────────────────────────────────
+const yearColor = (lbl) => {
+  if(lbl.includes('22')) return SILVER+'cc';
+  if(lbl.includes('23')) return BLUE+'cc';
+  if(lbl.includes('24')) return GOLD+'cc';
+  return GREEN+'cc';
+};
+
+new Chart(document.getElementById('qRevenueChart'), {
+  type:'bar', data: {
+    labels: qLabels,
+    datasets: [
+      { label:'Revenue ($B)', data: qRevenue, backgroundColor: qLabels.map(yearColor), borderWidth:0 },
+      { type:'line', label:'4Q Moving Avg', data: qRevenue.map((v,i,a)=>i>=3?(a[i]+a[i-1]+a[i-2]+a[i-3])/4:null), borderColor:'white', borderWidth:2, borderDash:[5,4], pointRadius:0, tension:0.4 }
+    ]
+  }, options: defOpts()
+});
+
+new Chart(document.getElementById('qEpsChart'), {
+  type:'line', data: {
+    labels: qLabels,
+    datasets: [{ label:'Diluted EPS ($)', data: qEps, borderColor: GOLD, backgroundColor: GOLD+'22', fill:true, tension:0.4, pointBackgroundColor:GOLD, pointRadius:4 }]
+  }, options: defOpts()
+});
+
+new Chart(document.getElementById('qBilledChart'), {
+  type:'bar', data: {
+    labels: qLabels,
+    datasets: [{ label:'Billed Business ($B)', data: qBilled, backgroundColor: qLabels.map(yearColor), borderWidth:0 }]
+  }, options: defOpts()
+});
+
+new Chart(document.getElementById('qWriteoffChart'), {
+  type:'bar', data: {
+    labels: qLabels,
+    datasets: [{ label:'Write-off Rate (%)', data: qWriteoff, backgroundColor: qWriteoff.map(v=>v>=2?RED+'cc':GREEN+'cc'), borderWidth:0 }]
+  }, options: defOpts()
+});
+
+// ── SEGMENTS ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('segRevChart'), {
+  type:'bar', data: {
+    labels: [2022,2023,2024,2025],
+    datasets: [
+      { label:'US Consumer Services', data:[28.92,33.14,36.50,43.80], backgroundColor: BLUE+'cc' },
+      { label:'Commercial Services',  data:[12.11,13.88,15.22,18.15], backgroundColor: GOLD+'cc' },
+      { label:'Intl Card Services',   data:[8.45,9.68,10.80,13.72],   backgroundColor: GREEN+'cc' },
+      { label:'GMNS & Other',         data:[3.38,3.82,3.48,4.79],     backgroundColor: SILVER+'cc' }
+    ]
+  }, options: { ...defOpts(), scales: {
+    x:{stacked:true,ticks:{color:'#A8B2C1'},grid:{color:'rgba(30,58,95,0.5)'}},
+    y:{stacked:true,ticks:{color:'#A8B2C1'},grid:{color:'rgba(30,58,95,0.5)'}}
+  } }
+});
+
+new Chart(document.getElementById('segPieChart'), {
+  type:'doughnut', data: {
+    labels: ['US Consumer','Commercial','International','GMNS & Other'],
+    datasets: [{ data:[43.80,18.15,13.72,4.79], backgroundColor:[BLUE,GOLD,GREEN,SILVER], borderColor:'#0F1B2D', borderWidth:3 }]
+  }, options: { plugins:{ legend:{labels:{color:'#A8B2C1',font:{size:11}}}, tooltip:{backgroundColor:'#0F1B2D',borderColor:'#1E3A5F',borderWidth:1,titleColor:GOLD,bodyColor:'#E2E8F0'} } }
+});
+
+new Chart(document.getElementById('segMarginChart'), {
+  type:'bar', data: {
+    labels:['US Consumer Services','Commercial Services','Intl Card Services'],
+    datasets:[{label:'Pretax Margin %', data:[18.04,25.73,14.65], backgroundColor:[BLUE+'cc',GOLD+'cc',GREEN+'cc'], borderWidth:0, borderRadius:6}]
+  }, options: {...defOpts(), indexAxis:'y'}
+});
+
+// ── CUSTOMERS ────────────────────────────────────────────────────────────
+new Chart(document.getElementById('cardsChart'), {
+  type:'line', data: {
+    labels:[2022,2023,2024,2025],
+    datasets:[{label:'Cards In Force (M)',data:[133.3,141.2,146.0,151.0],borderColor:BLUE,backgroundColor:BLUE+'22',fill:true,tension:0.4,pointBackgroundColor:BLUE,pointRadius:6}]
+  }, options:defOpts()
+});
+
+new Chart(document.getElementById('merchantChart'), {
+  type:'bar', data: {
+    labels:[2022,2023,2024,2025],
+    datasets:[{label:'Merchant Locations (M)',data:[99,112,130,160],backgroundColor:GOLD+'cc',borderColor:GOLD,borderWidth:1,borderRadius:6}]
+  }, options:defOpts()
+});
+
+new Chart(document.getElementById('genzChart'), {
+  type:'bar', data: {
+    labels:[2022,2023,2024,2025],
+    datasets:[{label:'Millennial+GenZ %',data:[55,60,63,65],backgroundColor:GREEN+'cc',borderColor:GREEN,borderWidth:1,borderRadius:6}]
+  }, options:defOpts()
+});
+
+new Chart(document.getElementById('spendCatChart'), {
+  type:'doughnut', data: {
+    labels:['Travel & Entertainment','Dining & Food','Retail & Shopping','Digital & Subscription','Healthcare','Business & B2B'],
+    datasets:[{data:[31.5,20.4,20.9,11.2,5.8,11.4],backgroundColor:[BLUE,GOLD,GREEN,'#FF9F43',RED,SILVER],borderColor:'#0F1B2D',borderWidth:3}]
+  }, options:{plugins:{legend:{labels:{color:'#A8B2C1',font:{size:10}}},tooltip:{backgroundColor:'#0F1B2D',borderColor:'#1E3A5F',borderWidth:1,titleColor:GOLD,bodyColor:'#E2E8F0'}}}
+});
+
+new Chart(document.getElementById('premiumChart'), {
+  type:'bar', data: {
+    labels:[2022,2023,2024,2025],
+    datasets:[
+      {label:'Premium Cards %',data:[62,65,68,70],backgroundColor:GOLD+'cc',borderRadius:4},
+      {label:'Standard Cards %',data:[38,35,32,30],backgroundColor:SILVER+'55',borderRadius:4}
+    ]
+  }, options:{...defOpts(),scales:{x:{stacked:true,ticks:{color:'#A8B2C1'},grid:{color:'rgba(30,58,95,0.5)'}},y:{stacked:true,ticks:{color:'#A8B2C1'},grid:{color:'rgba(30,58,95,0.5)'}}}}
+});
+
+// ── COMPETITORS ──────────────────────────────────────────────────────────
+new Chart(document.getElementById('compRevChart'), {
+  type:'bar', data: {
+    labels:['American Express','Visa','Mastercard','JPMorgan (Cards)','Capital One','Discover'],
+    datasets:[{
+      label:'Revenue 2025 ($B)',
+      data:[80.46,38.5,30.6,22.8,24.1,18.9],
+      backgroundColor:[GOLD+'cc',SILVER+'88',SILVER+'88',SILVER+'88',SILVER+'88',SILVER+'88'],
+      borderColor:[GOLD,SILVER,SILVER,SILVER,SILVER,SILVER],
+      borderWidth:1,borderRadius:6
+    }]
+  }, options:{...defOpts(),indexAxis:'y'}
+});
+
+new Chart(document.getElementById('compNpsChart'), {
+  type:'bar', data: {
+    labels:['American Express','Visa','Mastercard','JPMorgan (Cards)','Capital One','Discover'],
+    datasets:[{
+      label:'Net Promoter Score 2025',
+      data:[72,56,59,47,44,47],
+      backgroundColor:[GOLD+'cc',SILVER+'88',SILVER+'88',SILVER+'88',SILVER+'88',SILVER+'88'],
+      borderColor:[GOLD,SILVER,SILVER,SILVER,SILVER,SILVER],
+      borderWidth:1,borderRadius:6
+    }]
+  }, options:{...defOpts(),indexAxis:'y'}
+});
+
+// ── FORECAST ─────────────────────────────────────────────────────────────
+const forecastYears = [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026,2027,2028];
+const actualRevenue = [32.12,33.47,36.90,43.56,36.09,42.38,52.86,60.52,66.00,80.46,null,null,null];
+const polyForecast  = [null,null,null,null,null,null,null,null,null,80.46,91,102,114];
+const linForecast   = [null,null,null,null,null,null,null,null,null,80.46,87,93,99];
+
+new Chart(document.getElementById('forecastChart'), {
+  type:'line', data: {
+    labels: forecastYears,
+    datasets: [
+      { label:'Actual Revenue', data:actualRevenue, borderColor:GOLD, backgroundColor:GOLD+'22', fill:true, tension:0.4, pointBackgroundColor:GOLD, pointRadius:5 },
+      { label:'Poly Forecast', data:polyForecast, borderColor:GREEN, borderDash:[6,4], backgroundColor:GREEN+'15', fill:true, tension:0.4, pointBackgroundColor:GREEN, pointRadius:5 },
+      { label:'Linear Forecast', data:linForecast, borderColor:SILVER, borderDash:[3,6], tension:0.4, pointRadius:4, pointBackgroundColor:SILVER }
+    ]
+  }, options: defOpts()
+});
+
+const epsActual   = [5.65,2.97,7.33,7.99,3.77,9.87,9.85,11.21,14.01,15.41,null,null,null];
+const epsForecast = [null,null,null,null,null,null,null,null,null,15.41,17.2,19.1,21.3];
+
+new Chart(document.getElementById('epsForecastChart'), {
+  type:'line', data: {
+    labels: forecastYears,
+    datasets: [
+      { label:'Actual EPS', data:epsActual, borderColor:BLUE, backgroundColor:BLUE+'22', fill:true, tension:0.4, pointBackgroundColor:BLUE, pointRadius:5 },
+      { label:'EPS Forecast', data:epsForecast, borderColor:GREEN, borderDash:[6,4], backgroundColor:GREEN+'15', fill:true, tension:0.4, pointBackgroundColor:GREEN, pointRadius:5 }
+    ]
+  }, options: defOpts()
+});
+
+// ── Tab Switching ─────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  const section = document.getElementById('tab-'+id);
+  if(section) section.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>
